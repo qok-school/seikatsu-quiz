@@ -201,10 +201,34 @@ const QUIZ = [
 ];
 
 /* =========================================================
+   セクション定義（4分割）
+   アスリートの1日の流れに沿って6テーマを4セクションにまとめる。
+   ========================================================= */
+const SECTIONS = [
+  { title: "毎日の食事の土台", topics: ["① 朝食の量とバランス", "② 昼食の量とバランス"] },
+  { title: "練習をはさむ栄養", topics: ["③ 練習前の栄養補給", "④ 練習後のリカバリー食"] },
+  { title: "夜のリカバリー", topics: ["⑤ 夕食の量とタイミング"] },
+  { title: "1日の水分補給", topics: ["⑥ 1日を通じた水分補給"] },
+];
+
+// 各問がどのセクションに属するか（QUIZ と同じ長さ）
+const sectionOf = QUIZ.map((q) =>
+  SECTIONS.findIndex((s) => s.topics.includes(q.topic))
+);
+
+// 各セクションの開始 index・問数・終了 index を算出
+SECTIONS.forEach((s, i) => {
+  s.start = sectionOf.indexOf(i);
+  s.count = sectionOf.filter((x) => x === i).length;
+  s.end = s.start + s.count - 1;
+});
+
+/* =========================================================
    ロジック
    ========================================================= */
 const startScreen = document.getElementById("start-screen");
 const quizScreen = document.getElementById("quiz-screen");
+const sectionScreen = document.getElementById("section-screen");
 const resultScreen = document.getElementById("result-screen");
 
 const totalCountEl = document.getElementById("total-count");
@@ -217,6 +241,14 @@ const feedbackEl = document.getElementById("feedback");
 const feedbackMark = document.getElementById("feedback-mark");
 const feedbackText = document.getElementById("feedback-text");
 const nextBtn = document.getElementById("next-btn");
+
+const sectionDoneTitle = document.getElementById("section-done-title");
+const sectionScoreNum = document.getElementById("section-score-num");
+const sectionScoreTotal = document.getElementById("section-score-total");
+const sectionDots = document.getElementById("section-dots");
+const sectionProgressText = document.getElementById("section-progress-text");
+const sectionComment = document.getElementById("section-comment");
+const sectionNextBtn = document.getElementById("section-next-btn");
 
 const scoreNum = document.getElementById("score-num");
 const scoreTotal = document.getElementById("score-total");
@@ -233,9 +265,12 @@ totalCountEl.textContent = QUIZ.length;
 document.getElementById("start-btn").addEventListener("click", startQuiz);
 document.getElementById("retry-btn").addEventListener("click", startQuiz);
 nextBtn.addEventListener("click", goNext);
+sectionNextBtn.addEventListener("click", () => renderQuestion());
 
 function showScreen(screen) {
-  [startScreen, quizScreen, resultScreen].forEach((s) => (s.hidden = s !== screen));
+  [startScreen, quizScreen, sectionScreen, resultScreen].forEach(
+    (s) => (s.hidden = s !== screen)
+  );
   window.scrollTo(0, 0);
 }
 
@@ -243,15 +278,18 @@ function startQuiz() {
   current = 0;
   score = 0;
   results.length = 0;
-  showScreen(quizScreen);
   renderQuestion();
 }
 
 function renderQuestion() {
+  showScreen(quizScreen);
   answered = false;
   const q = QUIZ[current];
+  const sIdx = sectionOf[current];
+  const sec = SECTIONS[sIdx];
 
-  progressLabel.textContent = `第${current + 1}問 / 全${QUIZ.length}問`;
+  progressLabel.textContent =
+    `セクション${sIdx + 1}「${sec.title}」　第${current - sec.start + 1}問 / ${sec.count}問`;
   progressFill.style.width = `${(current / QUIZ.length) * 100}%`;
 
   questionTopic.textContent = q.topic;
@@ -293,17 +331,60 @@ function selectChoice(index) {
   feedbackText.textContent = q.explain;
   feedbackEl.hidden = false;
 
-  nextBtn.textContent = current === QUIZ.length - 1 ? "結果を見る" : "次の問題へ";
+  if (current === QUIZ.length - 1) {
+    nextBtn.textContent = "結果を見る";
+  } else if (current === SECTIONS[sectionOf[current]].end) {
+    nextBtn.textContent = "区切りへ進む";
+  } else {
+    nextBtn.textContent = "次の問題へ";
+  }
   nextBtn.hidden = false;
 }
 
 function goNext() {
+  const prevSec = sectionOf[current];
   current++;
-  if (current < QUIZ.length) {
-    renderQuestion();
-  } else {
+  if (current >= QUIZ.length) {
     showResult();
+  } else if (sectionOf[current] !== prevSec) {
+    showSectionBreak(prevSec);
+  } else {
+    renderQuestion();
   }
+}
+
+function showSectionBreak(sIdx) {
+  showScreen(sectionScreen);
+  const sec = SECTIONS[sIdx];
+
+  // このセクションの正解数を results から集計
+  const secResults = results.filter((r) => SECTIONS[sIdx].topics.includes(r.q.topic));
+  const secCorrect = secResults.filter((r) => r.correct).length;
+
+  sectionDoneTitle.textContent = `「${sec.title}」クリア！`;
+  sectionScoreNum.textContent = secCorrect;
+  sectionScoreTotal.textContent = sec.count;
+
+  sectionDots.innerHTML = "";
+  SECTIONS.forEach((_, i) => {
+    const dot = document.createElement("span");
+    if (i <= sIdx) dot.className = "on";
+    sectionDots.appendChild(dot);
+  });
+
+  sectionProgressText.textContent = `${sIdx + 1} / ${SECTIONS.length} セクション完了`;
+
+  const rate = secCorrect / sec.count;
+  let msg;
+  if (rate === 1) msg = "このセクションは全問正解！ その調子。";
+  else if (rate >= 0.5) msg = "いい調子。間違えた問題は結果画面で復習しよう。";
+  else msg = "むずかしかったね。あとで解説をもう一度読んでみよう。";
+  sectionComment.textContent = msg + " ここで一息ついてOK。準備ができたら次へ。";
+
+  const nextSec = SECTIONS[sIdx + 1];
+  sectionNextBtn.textContent = nextSec
+    ? `次のセクション「${nextSec.title}」へ`
+    : "次のセクションへ進む";
 }
 
 function showResult() {

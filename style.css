@@ -100,6 +100,7 @@ body {
   padding: 18px 20px;
   font-size: 1.2rem;
   font-weight: 700;
+  line-height: 1.4;
   cursor: pointer;
   font-family: inherit;
   transition: transform 0.08s ease, filter 0.15s ease;
@@ -200,6 +201,41 @@ body {
 .feedback-text { font-size: 1.1rem; color: var(--text-dim); }
 
 #next-btn { margin-top: 20px; }
+
+/* 一息つく画面（セクション完了） */
+.section-eyebrow {
+  text-align: center;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+
+.section-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 6px 0 16px;
+}
+
+.section-dots span {
+  width: 34px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--choice-border);
+}
+
+.section-dots span.on { background: var(--accent); }
+
+.section-progress-text {
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+
+#section-next-btn { margin-top: 8px; }
 
 /* 結果 */
 .score-line {

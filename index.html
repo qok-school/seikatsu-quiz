@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ジュニアアスリート 生活習慣クイズ｜食事・栄養</title>
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <div class="app">
@@ -25,8 +25,8 @@
       >
       <h2 class="screen-title">練習の質を上げる食事クイズ</h2>
       <p class="lead">
-        朝食・昼食・練習前・練習後・夕食・水分補給の6テーマから
-        全<span id="total-count">0</span>問。<br>
+        朝食・昼食・練習前・練習後・夕食・水分補給の6テーマ、全<span id="total-count">0</span>問。<br>
+        <strong>4つのセクション</strong>に分かれていて、1つ終わるごとに一息つけます。<br>
         4つの選択肢から正しいものを1つ選ぼう。
       </p>
       <button id="start-btn" class="btn btn-primary">スタート</button>
@@ -52,6 +52,19 @@
       <button id="next-btn" class="btn btn-primary" hidden>次の問題へ</button>
     </section>
 
+    <!-- 一息つく画面（セクション完了） -->
+    <section id="section-screen" class="card screen" hidden>
+      <p class="section-eyebrow">セクション完了</p>
+      <h2 id="section-done-title" class="screen-title"></h2>
+      <p class="score-line">
+        <span id="section-score-num">0</span> / <span id="section-score-total">0</span> 問 正解
+      </p>
+      <div id="section-dots" class="section-dots"></div>
+      <p id="section-progress-text" class="section-progress-text"></p>
+      <p id="section-comment" class="score-comment"></p>
+      <button id="section-next-btn" class="btn btn-primary">次のセクションへ進む</button>
+    </section>
+
     <!-- 結果画面 -->
     <section id="result-screen" class="card screen" hidden>
       <h2 class="screen-title">結果</h2>
@@ -64,6 +77,6 @@
     </section>
   </div>
 
-  <script src="script.js?v=2"></script>
+  <script src="script.js?v=3"></script>
 </body>
 </html>
