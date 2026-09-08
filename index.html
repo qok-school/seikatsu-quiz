@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ジュニアアスリート 生活習慣クイズ｜食事・栄養</title>
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <div class="app">
@@ -29,7 +29,12 @@
         <strong>4つのセクション</strong>に分かれていて、1つ終わるごとに一息つけます。<br>
         4つの選択肢から正しいものを1つ選ぼう。
       </p>
+      <div id="resume-area" class="resume-area" hidden>
+        <p id="resume-note" class="resume-note"></p>
+        <button id="resume-btn" class="btn btn-primary">前回の続きから</button>
+      </div>
       <button id="start-btn" class="btn btn-primary">スタート</button>
+      <p id="stats-line" class="stats-line" hidden></p>
     </section>
 
     <!-- クイズ画面 -->
@@ -77,6 +82,6 @@
     </section>
   </div>
 
-  <script src="script.js?v=3"></script>
+  <script src="script.js?v=4"></script>
 </body>
 </html>

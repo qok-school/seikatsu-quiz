@@ -232,6 +232,10 @@ const sectionScreen = document.getElementById("section-screen");
 const resultScreen = document.getElementById("result-screen");
 
 const totalCountEl = document.getElementById("total-count");
+const startBtn = document.getElementById("start-btn");
+const resumeArea = document.getElementById("resume-area");
+const resumeNote = document.getElementById("resume-note");
+const statsLine = document.getElementById("stats-line");
 const progressLabel = document.getElementById("progress-label");
 const progressFill = document.getElementById("progress-fill");
 const questionTopic = document.getElementById("question-topic");
@@ -260,12 +264,116 @@ let score = 0;
 let answered = false;
 const results = [];
 
+/* ---------- localStorage への保存 ----------
+   プライベートブラウズ等で localStorage が使えない場合でも
+   画面が壊れないよう、読み書きはすべて try/catch で囲む。 */
+const PROGRESS_KEY = "seikatsu-quiz:food:progress";
+const STATS_KEY = "seikatsu-quiz:food:stats";
+
+function storageGet(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function storageSet(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    // 保存できない環境では保存しない（動作は継続する）
+  }
+}
+
+function storageRemove(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch (e) {
+    // 同上
+  }
+}
+
+// 次に出題する問題の index を渡して途中経過を保存する
+function saveProgress(nextIndex) {
+  storageSet(PROGRESS_KEY, {
+    total: QUIZ.length,
+    current: nextIndex,
+    score,
+    results: results.map((r) => ({ qi: r.qi, chosen: r.chosen, correct: r.correct })),
+  });
+}
+
+// 保存された途中経過を読み込む。壊れている・問題数が変わった場合は null
+function loadProgress() {
+  const data = storageGet(PROGRESS_KEY);
+  if (!data || data.total !== QUIZ.length) return null;
+  if (typeof data.current !== "number" || data.current < 1 || data.current > QUIZ.length) return null;
+  if (!Array.isArray(data.results) || data.results.length !== data.current) return null;
+
+  const restored = [];
+  for (const r of data.results) {
+    const q = QUIZ[r.qi];
+    if (!q) return null;
+    restored.push({ q, qi: r.qi, chosen: r.chosen, correct: !!r.correct });
+  }
+  return {
+    current: data.current,
+    score: typeof data.score === "number" ? data.score : 0,
+    results: restored,
+  };
+}
+
+function loadStats() {
+  const data = storageGet(STATS_KEY);
+  const best = data && typeof data.best === "number" ? data.best : 0;
+  const plays = data && typeof data.plays === "number" ? data.plays : 0;
+  return { best, plays };
+}
+
+function recordStats(finalScore) {
+  const stats = loadStats();
+  storageSet(STATS_KEY, {
+    best: Math.max(stats.best, finalScore),
+    plays: stats.plays + 1,
+  });
+}
+
 totalCountEl.textContent = QUIZ.length;
 
-document.getElementById("start-btn").addEventListener("click", startQuiz);
+startBtn.addEventListener("click", startQuiz);
+document.getElementById("resume-btn").addEventListener("click", resumeQuiz);
 document.getElementById("retry-btn").addEventListener("click", startQuiz);
 nextBtn.addEventListener("click", goNext);
 sectionNextBtn.addEventListener("click", () => renderQuestion());
+
+initStartScreen();
+
+// スタート画面に「前回の続きから」とベストスコア・挑戦回数を反映する
+function initStartScreen() {
+  const saved = loadProgress();
+  if (saved) {
+    resumeNote.textContent =
+      `前回の続きがあります（${saved.results.length} / ${QUIZ.length}問 回答済み・${saved.score}問正解）。`;
+    resumeArea.hidden = false;
+    startBtn.textContent = "最初からやり直す";
+    startBtn.className = "btn btn-secondary";
+  } else {
+    resumeArea.hidden = true;
+    startBtn.textContent = "スタート";
+    startBtn.className = "btn btn-primary";
+  }
+
+  const stats = loadStats();
+  if (stats.plays > 0) {
+    statsLine.textContent =
+      `ベストスコア ${stats.best} / ${QUIZ.length}問　挑戦回数 ${stats.plays}回`;
+    statsLine.hidden = false;
+  } else {
+    statsLine.hidden = true;
+  }
+}
 
 function showScreen(screen) {
   [startScreen, quizScreen, sectionScreen, resultScreen].forEach(
@@ -275,10 +383,31 @@ function showScreen(screen) {
 }
 
 function startQuiz() {
+  storageRemove(PROGRESS_KEY);
   current = 0;
   score = 0;
   results.length = 0;
+  initStartScreen();
   renderQuestion();
+}
+
+// 保存された途中経過から再開する
+function resumeQuiz() {
+  const saved = loadProgress();
+  if (!saved) {
+    startQuiz();
+    return;
+  }
+  current = saved.current;
+  score = saved.score;
+  results.length = 0;
+  saved.results.forEach((r) => results.push(r));
+
+  if (current >= QUIZ.length) {
+    showResult();
+  } else {
+    renderQuestion();
+  }
 }
 
 function renderQuestion() {
@@ -324,7 +453,8 @@ function selectChoice(index) {
   });
 
   if (isCorrect) score++;
-  results.push({ q, chosen: index, correct: isCorrect });
+  results.push({ q, qi: current, chosen: index, correct: isCorrect });
+  saveProgress(current + 1);
 
   feedbackMark.textContent = isCorrect ? "◯ 正解！" : "✕ 不正解";
   feedbackMark.className = "feedback-mark " + (isCorrect ? "ok" : "ng");
@@ -390,6 +520,10 @@ function showSectionBreak(sIdx) {
 function showResult() {
   showScreen(resultScreen);
   progressFill.style.width = "100%";
+
+  storageRemove(PROGRESS_KEY);
+  recordStats(score);
+  initStartScreen();
 
   scoreNum.textContent = score;
   scoreTotal.textContent = QUIZ.length;

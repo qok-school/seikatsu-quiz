@@ -115,6 +115,31 @@ body {
 
 .btn-primary:hover { filter: brightness(1.06); }
 
+.btn-secondary {
+  background: var(--choice-bg);
+  border: 1px solid var(--choice-border);
+  color: var(--text);
+}
+
+.btn-secondary:hover { filter: brightness(1.15); }
+
+/* スタート画面の再開・記録 */
+.resume-area { margin-bottom: 12px; }
+
+.resume-note {
+  font-size: 1.05rem;
+  color: var(--text-dim);
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.stats-line {
+  margin-top: 16px;
+  font-size: 1.05rem;
+  color: var(--text-dim);
+  text-align: center;
+}
+
 /* 進捗 */
 .progress-row { margin-bottom: 20px; }
 
