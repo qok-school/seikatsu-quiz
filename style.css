@@ -278,6 +278,35 @@ body {
   margin-bottom: 24px;
 }
 
+/* レビューの絞り込み */
+.review-filter {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.filter-btn {
+  flex: 1;
+  background: var(--choice-bg);
+  border: 2px solid var(--choice-border);
+  color: var(--text-dim);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.filter-btn:hover { border-color: var(--accent); }
+
+.filter-btn.is-active {
+  border-color: var(--accent);
+  color: var(--text);
+  background: var(--accent-dark);
+}
+
 .review { display: flex; flex-direction: column; gap: 14px; margin-bottom: 26px; }
 
 .review-item {
@@ -294,6 +323,14 @@ body {
 .review-a { font-size: 1rem; color: var(--text-dim); }
 .review-a .mark-ok { color: var(--correct); font-weight: 700; }
 .review-a .mark-ng { color: var(--wrong); font-weight: 700; }
+
+.review-explain {
+  font-size: 1rem;
+  color: var(--text-dim);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--choice-border);
+}
 
 @media (min-width: 480px) {
   .app-title { font-size: 1.7rem; }

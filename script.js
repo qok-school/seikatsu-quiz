@@ -257,12 +257,16 @@ const sectionNextBtn = document.getElementById("section-next-btn");
 const scoreNum = document.getElementById("score-num");
 const scoreTotal = document.getElementById("score-total");
 const scoreComment = document.getElementById("score-comment");
+const reviewFilterEl = document.getElementById("review-filter");
+const filterAllBtn = document.getElementById("filter-all");
+const filterWrongBtn = document.getElementById("filter-wrong");
 const reviewEl = document.getElementById("review");
 
 let current = 0;
 let score = 0;
 let answered = false;
 const results = [];
+let reviewFilter = "all"; // 結果画面のレビュー絞り込み: "all" / "wrong"
 
 /* ---------- localStorage への保存 ----------
    プライベートブラウズ等で localStorage が使えない場合でも
@@ -347,6 +351,8 @@ document.getElementById("resume-btn").addEventListener("click", resumeQuiz);
 document.getElementById("retry-btn").addEventListener("click", startQuiz);
 nextBtn.addEventListener("click", goNext);
 sectionNextBtn.addEventListener("click", () => renderQuestion());
+filterAllBtn.addEventListener("click", () => setReviewFilter("all"));
+filterWrongBtn.addEventListener("click", () => setReviewFilter("wrong"));
 
 initStartScreen();
 
@@ -536,8 +542,25 @@ function showResult() {
   else comment = "もう一度資料を読んで、再チャレンジしてみよう。";
   scoreComment.textContent = comment;
 
+  // 間違いが0件のときは絞り込みを出さない
+  const wrongCount = results.filter((r) => !r.correct).length;
+  reviewFilterEl.hidden = wrongCount === 0;
+  setReviewFilter("all");
+}
+
+// レビュー一覧の絞り込みを切り替える
+function setReviewFilter(mode) {
+  reviewFilter = mode;
+  filterAllBtn.classList.toggle("is-active", mode === "all");
+  filterWrongBtn.classList.toggle("is-active", mode === "wrong");
+  renderReview();
+}
+
+function renderReview() {
   reviewEl.innerHTML = "";
   results.forEach((r, i) => {
+    if (reviewFilter === "wrong" && r.correct) return;
+
     const item = document.createElement("div");
     item.className = "review-item " + (r.correct ? "ok" : "ng");
 
@@ -557,8 +580,13 @@ function showResult() {
         `<span class="mark-ok">◯</span> 正解: ${escapeHtml(rightAns)}`;
     }
 
+    const ex = document.createElement("p");
+    ex.className = "review-explain";
+    ex.textContent = r.q.explain;
+
     item.appendChild(q);
     item.appendChild(a);
+    item.appendChild(ex);
     reviewEl.appendChild(item);
   });
 }

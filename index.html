@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ジュニアアスリート 生活習慣クイズ｜食事・栄養</title>
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
   <div class="app">
@@ -77,11 +77,15 @@
         <span id="score-num">0</span> / <span id="score-total">0</span> 問 正解
       </p>
       <p id="score-comment" class="score-comment"></p>
+      <div id="review-filter" class="review-filter" hidden>
+        <button id="filter-all" class="filter-btn is-active" type="button">すべて</button>
+        <button id="filter-wrong" class="filter-btn" type="button">間違いのみ</button>
+      </div>
       <div id="review" class="review"></div>
       <button id="retry-btn" class="btn btn-primary">もう一度挑戦する</button>
     </section>
   </div>
 
-  <script src="script.js?v=4"></script>
+  <script src="script.js?v=5"></script>
 </body>
 </html>
